@@ -1,4 +1,5 @@
 (function() {
+  var slice = [].slice
   function MicroMachine(initialState){
     var callbacks = {}
     var before = callbacks.before = {}
@@ -22,7 +23,7 @@
 
     publicMethods.trigger = function(event){
       if (this.canTrigger(event)) {
-        var args = Array.prototype.slice.call(arguments, 1)
+        var args = slice.call(arguments, 1)
         var beforeEvent = before[event], beforeAny = before.any
         var afterEvent, afterAny
         var makeTransition = true;

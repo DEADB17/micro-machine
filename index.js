@@ -9,18 +9,16 @@
       return publicMethods.transitionsFor[event][publicMethods.state]
     }
 
-    var callbacks = {}
+    var callbacks = { after: {}}
 
     var changeState = function(event){
       publicMethods.state = endingState(event)
 
-      if (callbacks[event]){
-        callbacks[event](publicMethods)
-      }
+      if (callbacks.after[event])
+        callbacks.after[event](publicMethods)
 
-      if (callbacks.any){
-        callbacks.any(publicMethods)
-      }
+      if (callbacks.after.any)
+        callbacks.after.any(publicMethods)
     }
 
     publicMethods.canTrigger = function(event){
@@ -35,8 +33,8 @@
         return false
     }
 
-    publicMethods.on = function(event, callback) {
-      callbacks[event] = callback
+    publicMethods.on = publicMethods.after = function(event, callback) {
+      callbacks.after[event] = callback
     }
 
     return publicMethods

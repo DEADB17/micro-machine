@@ -9,16 +9,29 @@
       return publicMethods.transitionsFor[event][publicMethods.state]
     }
 
-    var callbacks = { after: {}}
+    var callbacks = { before: {}, after: {}}
 
     var changeState = function(event){
-      publicMethods.state = endingState(event)
+      var makeTransition = true;
 
-      if (callbacks.after[event])
-        callbacks.after[event](publicMethods)
+      if (callbacks.before[event])
+        makeTransition = callbacks.before[event](publicMethods) !== false
 
-      if (callbacks.after.any)
-        callbacks.after.any(publicMethods)
+      if (makeTransition && callbacks.before.any)
+        makeTransition = callbacks.before.any(publicMethods) !== false
+
+      if (makeTransition) {
+        publicMethods.state = endingState(event)
+
+        if (callbacks.after[event])
+          callbacks.after[event](publicMethods)
+
+        if (callbacks.after.any)
+          callbacks.after.any(publicMethods)
+
+        return true
+      }
+      return false
     }
 
     publicMethods.canTrigger = function(event){
@@ -26,11 +39,11 @@
     }
 
     publicMethods.trigger = function(event){
-      if (this.canTrigger(event)){
-        changeState(event)
-        return true
-      } else
-        return false
+      return this.canTrigger(event) && changeState(event)
+    }
+
+    publicMethods.before = function(event, callback) {
+      callbacks.before[event] = callback
     }
 
     publicMethods.on = publicMethods.after = function(event, callback) {

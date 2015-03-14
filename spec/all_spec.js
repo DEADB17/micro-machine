@@ -1,3 +1,5 @@
+/*jshint jasmine:true, quotmark:false*/
+
 var MicroMachine = require('../')
 
 var machine
@@ -56,6 +58,93 @@ describe("basic usage", function(){
 })
 
 describe("callbacks", function(){
+  describe("#before", function(){
+
+    prepareMachine()
+
+    it("accepts a callback to be invoked before a transition", function(){
+      var state = "pending"
+      machine.before("confirm", function() { return true })
+      machine.on("confirm", function() { state = "confirmed" })
+
+      machine.trigger('confirm')
+
+      expect(state).toBe("confirmed")
+    })
+
+    it("can cancel a transition when a specific event is triggered", function(){
+      var state = "pending"
+      machine.before("confirm", function() { return false })
+      machine.on("confirm", function() { state = "confirmed" })
+
+      machine.trigger('confirm')
+
+      expect(state).toBe("pending")
+    })
+
+    it("accepts a callback to be invoked before any transitions", function(){
+      var state, before
+      machine.before('any', function(machine){
+        before = machine.state
+      })
+      machine.on('any', function(machine){
+        state = machine.state
+      })
+
+      machine.trigger('ignore')
+      expect(before).toBe('pending')
+      expect(state).toBe('ignored')
+
+      machine.trigger('reset')
+      expect(before).toBe('ignored')
+      expect(state).toBe('pending')
+    })
+
+    it("can cancel a transition when any event is triggered", function(){
+      var state = "pending"
+      machine.before("any", function() { return false })
+      machine.on("confirm", function() { state = "confirmed" })
+
+      machine.trigger('confirm')
+
+      expect(state).toBe("pending")
+    })
+
+    it("triggers specific events before any events", function(){
+      var state = "pending"
+      var before = state
+      machine.before("confirm", function() { before = "before-pending" })
+      machine.before("any", function() { return false })
+      machine.on("confirm", function() { state = "confirmed" })
+
+      machine.trigger('confirm')
+
+      expect(state).toBe("pending")
+      expect(before).toBe("before-pending")
+    })
+
+    it("invokes multiple callbacks", function(){
+      var counter = 0
+
+      machine.before('any', function(machine){
+        counter++
+      })
+      machine.after('any', function(machine){
+        counter--
+      })
+
+      machine.before('ignore', function(machine){
+        counter++
+      })
+      machine.after('ignore', function(machine){
+        counter--
+      })
+
+      machine.trigger('ignore')
+      expect(counter).toBe(0)
+    })
+  })
+
   describe("#on", function(){
 
     prepareMachine()

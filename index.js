@@ -9,25 +9,23 @@
     var transitionsFor = publicMethods.transitionsFor = {}
     publicMethods.state = initialState
 
-    function endingState(event){
-      return transitionsFor[event][publicMethods.state]
-    }
-
     function transitionInfo(event, from, to, phase, isAny) {
       return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
     publicMethods.canTrigger = function(event){
-      return !!endingState(event)
+      return !!transitionsFor[event][publicMethods.state]
     }
 
     publicMethods.trigger = function(event){
-      if (this.canTrigger(event)) {
+      var from = publicMethods.state
+      var to = transitionsFor[event][from]
+      if (to) {
         var args = slice.call(arguments, 1)
-        var beforeEvent = before[event], beforeAny = before.any
+        var beforeEvent = before[event]
+        var beforeAny = before.any
         var afterEvent, afterAny
         var makeTransition = true;
-        var from = publicMethods.state, to = endingState(event)
         // avoid making copies of the args array
         // prepend publicMethods and a placeholder for transitionInfo
         args.unshift(publicMethods, 1)

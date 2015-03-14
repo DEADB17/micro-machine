@@ -15,31 +15,34 @@
       return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
-    var changeState = function(event){
-      var transition, makeTransition = true;
+    var changeState = function(event, args){
+      var makeTransition = true;
       var from = publicMethods.state, to = endingState(event)
+      // avoid making copies of the args array
+      // prepend publicMethods and a placeholder for transitionInfo
+      args.unshift(publicMethods, 1)
 
       if (callbacks.before[event]) {
-        transition = transitionInfo(event, from, to, 'before', false)
-        makeTransition = callbacks.before[event](publicMethods, transition) !== false
+        args[1] = transitionInfo(event, from, to, 'before', false)
+        makeTransition = callbacks.before[event].apply(null, args) !== false
       }
 
       if (makeTransition && callbacks.before.any) {
-        transition = transitionInfo(event, from, to, 'before', true)
-        makeTransition = callbacks.before.any(publicMethods, transition) !== false
+        args[1] = transitionInfo(event, from, to, 'before', true)
+        makeTransition = callbacks.before.any.apply(null, args) !== false
       }
 
       if (makeTransition) {
         publicMethods.state = to
 
         if (callbacks.after[event]) {
-          transition = transitionInfo(event, from, to, 'after', false)
-          callbacks.after[event](publicMethods, transition)
+          args[1] = transitionInfo(event, from, to, 'after', false)
+          callbacks.after[event].apply(null, args)
         }
 
         if (callbacks.after.any) {
-          transition = transitionInfo(event, from, to, 'after', true)
-          callbacks.after.any(publicMethods, transition)
+          args[1] = transitionInfo(event, from, to, 'after', true)
+          callbacks.after.any.apply(null, args)
         }
 
         return true
@@ -52,7 +55,8 @@
     }
 
     publicMethods.trigger = function(event){
-      return this.canTrigger(event) && changeState(event)
+      var args = Array.prototype.slice.call(arguments, 1)
+      return this.canTrigger(event) && changeState(event, args)
     }
 
     publicMethods.before = function(event, callback) {

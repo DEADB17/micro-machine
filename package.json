@@ -30,7 +30,7 @@
   "devDependencies": {
     "grunt": "*",
     "grunt-cli": "*",
-    "grunt-jasmine-node": "*",
+    "grunt-jasmine-nodejs": "*",
     "grunt-contrib-uglify": "*",
     "grunt-contrib-watch": "*",
     "grunt-contrib-concat": "*"

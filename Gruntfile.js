@@ -20,16 +20,18 @@ module.exports = function(grunt) {
         }
       }
     },
-    jasmine_node: {
-      all: ['spec/']
+    jasmine_nodejs: {
+      all: {
+        specs: ['spec/*']
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-jasmine-node');
+  grunt.loadNpmTasks('grunt-jasmine-nodejs');
 
-  grunt.registerTask('test', ['jasmine_node']);
-  grunt.registerTask('default', ['jasmine_node', 'concat', 'uglify']);
+  grunt.registerTask('test', ['jasmine_nodejs']);
+  grunt.registerTask('default', ['jasmine_nodejs', 'concat', 'uglify']);
 };

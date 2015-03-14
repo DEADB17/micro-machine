@@ -9,40 +9,46 @@
       return publicMethods.transitionsFor[event][publicMethods.state]
     }
 
-    var callbacks = { before: {}, after: {}}
+    var callbacks = {}
+    var before = callbacks.before = {}
+    var after = callbacks.after = {}
 
     var transitionInfo = function (event, from, to, phase, isAny) {
       return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
     var changeState = function(event, args){
+      var beforeEvent = before[event], beforeAny = before.any
+      var afterEvent, afterAny
       var makeTransition = true;
       var from = publicMethods.state, to = endingState(event)
       // avoid making copies of the args array
       // prepend publicMethods and a placeholder for transitionInfo
       args.unshift(publicMethods, 1)
 
-      if (callbacks.before[event]) {
+      if (beforeEvent) {
         args[1] = transitionInfo(event, from, to, 'before', false)
-        makeTransition = callbacks.before[event].apply(null, args) !== false
+        makeTransition = beforeEvent.apply(beforeEvent, args) !== false
       }
 
-      if (makeTransition && callbacks.before.any) {
+      if (makeTransition && beforeAny) {
         args[1] = transitionInfo(event, from, to, 'before', true)
-        makeTransition = callbacks.before.any.apply(null, args) !== false
+        makeTransition = beforeAny.apply(beforeAny, args) !== false
       }
 
       if (makeTransition) {
         publicMethods.state = to
+        afterEvent = after[event]
+        afterAny = after.any
 
-        if (callbacks.after[event]) {
+        if (afterEvent) {
           args[1] = transitionInfo(event, from, to, 'after', false)
-          callbacks.after[event].apply(null, args)
+          afterEvent.apply(afterEvent, args)
         }
 
-        if (callbacks.after.any) {
+        if (afterAny) {
           args[1] = transitionInfo(event, from, to, 'after', true)
-          callbacks.after.any.apply(null, args)
+          afterAny.apply(afterAny, args)
         }
 
         return true
@@ -60,11 +66,11 @@
     }
 
     publicMethods.before = function(event, callback) {
-      callbacks.before[event] = callback
+      before[event] = callback
     }
 
     publicMethods.on = publicMethods.after = function(event, callback) {
-      callbacks.after[event] = callback
+      after[event] = callback
     }
 
     return publicMethods

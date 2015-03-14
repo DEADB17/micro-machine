@@ -1,23 +1,22 @@
 (function() {
-  var MicroMachine = function(initialState){
-    var publicMethods = {}
-
-    publicMethods.state = initialState
-    publicMethods.transitionsFor = {}
-
-    var endingState = function(event){
-      return publicMethods.transitionsFor[event][publicMethods.state]
-    }
-
+  function MicroMachine(initialState){
     var callbacks = {}
     var before = callbacks.before = {}
     var after = callbacks.after = {}
 
-    var transitionInfo = function (event, from, to, phase, isAny) {
+    var publicMethods = {}
+    publicMethods.state = initialState
+    publicMethods.transitionsFor = {}
+
+    function endingState(event){
+      return publicMethods.transitionsFor[event][publicMethods.state]
+    }
+
+    function transitionInfo(event, from, to, phase, isAny) {
       return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
-    var changeState = function(event, args){
+    function changeState(event, args){
       var beforeEvent = before[event], beforeAny = before.any
       var afterEvent, afterAny
       var makeTransition = true;

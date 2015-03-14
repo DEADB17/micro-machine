@@ -1,6 +1,8 @@
 (function(undefined) {
   var BEFORE = 'before'
   var AFTER = 'after'
+  var STATE = 'state'
+  var APPLY = 'apply'
   var slice = [].slice
   function MicroMachine(initialState){
     var callbacks = {}
@@ -9,18 +11,18 @@
 
     var publicMethods = {}
     var transitionsFor = publicMethods.transitionsFor = {}
-    publicMethods.state = initialState
+    publicMethods[STATE] = initialState
 
     function transitionInfo(event, from, to, phase, isAny) {
       return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
     publicMethods.canTrigger = function(event){
-      return !!transitionsFor[event][publicMethods.state]
+      return !!transitionsFor[event][publicMethods[STATE]]
     }
 
     publicMethods.trigger = function(event){
-      var from = publicMethods.state
+      var from = publicMethods[STATE]
       var to = transitionsFor[event][from]
       if (to) {
         var args = slice.call(arguments, 1)
@@ -34,27 +36,27 @@
 
         if (beforeEvent) {
           args[1] = transitionInfo(event, from, to, BEFORE, false)
-          makeTransition = beforeEvent.apply(beforeEvent, args) !== false
+          makeTransition = beforeEvent[APPLY](beforeEvent, args) !== false
         }
 
         if (makeTransition && beforeAny) {
           args[1] = transitionInfo(event, from, to, BEFORE, true)
-          makeTransition = beforeAny.apply(beforeAny, args) !== false
+          makeTransition = beforeAny[APPLY](beforeAny, args) !== false
         }
 
         if (makeTransition) {
-          publicMethods.state = to
+          publicMethods[STATE] = to
           afterEvent = after[event]
           afterAny = after.any
 
           if (afterEvent) {
             args[1] = transitionInfo(event, from, to, AFTER, false)
-            afterEvent.apply(afterEvent, args)
+            afterEvent[APPLY](afterEvent, args)
           }
 
           if (afterAny) {
             args[1] = transitionInfo(event, from, to, AFTER, true)
-            afterAny.apply(afterAny, args)
+            afterAny[APPLY](afterAny, args)
           }
 
           return true

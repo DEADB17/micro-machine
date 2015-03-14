@@ -1,4 +1,4 @@
-(function() {
+(function(undefined) {
   var BEFORE = 'before'
   var AFTER = 'after'
   var slice = [].slice
@@ -74,7 +74,7 @@
     return publicMethods
   }
 
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+  if (module !== undefined && module.exports !== undefined)
     module.exports = MicroMachine
   else
     window.MicroMachine = MicroMachine

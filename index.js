@@ -6,11 +6,11 @@
     var after = callbacks.after = {}
 
     var publicMethods = {}
+    var transitionsFor = publicMethods.transitionsFor = {}
     publicMethods.state = initialState
-    publicMethods.transitionsFor = {}
 
     function endingState(event){
-      return publicMethods.transitionsFor[event][publicMethods.state]
+      return transitionsFor[event][publicMethods.state]
     }
 
     function transitionInfo(event, from, to, phase, isAny) {

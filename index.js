@@ -1,5 +1,5 @@
 (function() {
-  var MicroMachine = (function(initialState){
+  var MicroMachine = function(initialState){
     var publicMethods = {}
 
     publicMethods.state = initialState
@@ -40,7 +40,7 @@
     }
 
     return publicMethods
-  })
+  }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
     module.exports = MicroMachine

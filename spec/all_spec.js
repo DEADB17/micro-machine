@@ -241,6 +241,16 @@ describe("callbacks", function(){
       })
       machine.trigger('confirm')
     })
+
+    it("receives any additional arguments from the trigger", function(){
+      machine.after("confirm", function(m, transition, a, b, c) {
+        expect(arguments.length).toBe(6)
+        expect(a).toEqual([])
+        expect(b).toEqual({})
+        expect(c).toEqual('c')
+      })
+      machine.trigger('confirm', [], {}, 'c', 4)
+    })
   })
 })
 

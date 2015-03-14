@@ -1,9 +1,11 @@
 (function() {
+  var BEFORE = 'before'
+  var AFTER = 'after'
   var slice = [].slice
   function MicroMachine(initialState){
     var callbacks = {}
-    var before = callbacks.before = {}
-    var after = callbacks.after = {}
+    var before = callbacks[BEFORE] = {}
+    var after = callbacks[AFTER] = {}
 
     var publicMethods = {}
     var transitionsFor = publicMethods.transitionsFor = {}
@@ -31,12 +33,12 @@
         args.unshift(publicMethods, 1)
 
         if (beforeEvent) {
-          args[1] = transitionInfo(event, from, to, 'before', false)
+          args[1] = transitionInfo(event, from, to, BEFORE, false)
           makeTransition = beforeEvent.apply(beforeEvent, args) !== false
         }
 
         if (makeTransition && beforeAny) {
-          args[1] = transitionInfo(event, from, to, 'before', true)
+          args[1] = transitionInfo(event, from, to, BEFORE, true)
           makeTransition = beforeAny.apply(beforeAny, args) !== false
         }
 
@@ -46,12 +48,12 @@
           afterAny = after.any
 
           if (afterEvent) {
-            args[1] = transitionInfo(event, from, to, 'after', false)
+            args[1] = transitionInfo(event, from, to, AFTER, false)
             afterEvent.apply(afterEvent, args)
           }
 
           if (afterAny) {
-            args[1] = transitionInfo(event, from, to, 'after', true)
+            args[1] = transitionInfo(event, from, to, AFTER, true)
             afterAny.apply(afterAny, args)
           }
 
@@ -61,11 +63,11 @@
       return false
     }
 
-    publicMethods.before = function(event, callback) {
+    publicMethods[BEFORE] = function(event, callback) {
       before[event] = callback
     }
 
-    publicMethods.on = publicMethods.after = function(event, callback) {
+    publicMethods.on = publicMethods[AFTER] = function(event, callback) {
       after[event] = callback
     }
 

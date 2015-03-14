@@ -145,7 +145,7 @@ describe("callbacks", function(){
     })
   })
 
-  describe("#on", function(){
+  describe("#on/#after", function(){
 
     prepareMachine()
 
@@ -193,6 +193,53 @@ describe("callbacks", function(){
 
       machine.trigger('ignore')
       expect(counter).toBe(2)
+    })
+  })
+
+  describe("arguments", function(){
+    prepareMachine()
+
+    it("passes the transition information before a specific transition", function(){
+      machine.before("confirm", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'before', isAny: false })
+      })
+      machine.trigger('confirm')
+    })
+
+    it("passes the transition information before a generic transition", function(){
+      machine.before("any", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'before', isAny: true })
+      })
+      machine.trigger('confirm')
+    })
+
+    it("passes the transition information after a specific transition", function(){
+      machine.on("confirm", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'after', isAny: false })
+      })
+      machine.trigger('confirm')
+    })
+
+    it("passes the transition information after a generic transition", function(){
+      machine.on("any", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'after', isAny: true })
+      })
+      machine.trigger('confirm')
+    })
+
+    it("avoids sharing references between callbacks", function(){
+      machine.before("confirm", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'before', isAny: false })
+        transition.event = null
+        transition.from = null
+        transition.to = null
+        transition.phase = null
+        transition.isAny = null
+      })
+      machine.after("confirm", function(m, transition) {
+        expect(transition).toEqual({ event: 'confirm', from: 'pending', to: 'confirmed', phase: 'after', isAny: false })
+      })
+      machine.trigger('confirm')
     })
   })
 })

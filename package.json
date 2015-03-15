@@ -1,6 +1,6 @@
 {
   "name": "micro-machine",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Minimal state machine implementation.",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "micro"
   ],
   "author": "Hrvoje Simic <shime.ferovac@gmail.com>",
+  "contributors": ["DEADB17 <DEADB17@gmail.com>"],
   "licenses": [
     {
       "type": "UNLICENSE",

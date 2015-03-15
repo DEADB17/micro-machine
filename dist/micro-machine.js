@@ -1,48 +1,82 @@
-(function() {
-  var MicroMachine = (function(initialState){
-    var publicMethods = {}
-
-    publicMethods.state = initialState
-    publicMethods.transitionsFor = {}
-
-    var endingState = function(event){
-      return publicMethods.transitionsFor[event][publicMethods.state]
-    }
+(function(undefined) {
+  function MicroMachine(initialState){
+    var STATE = 'state'
+    var BEFORE = 'before'
+    var AFTER = 'after'
+    var APPLY = 'apply'
+    var slice = [].slice
 
     var callbacks = {}
+    var before = callbacks[BEFORE] = {}
+    var after = callbacks[AFTER] = {}
 
-    var changeState = function(event){
-      publicMethods.state = endingState(event)
+    var publicMethods = {}
+    var transitionsFor = publicMethods.transitionsFor = {}
+    publicMethods[STATE] = initialState
 
-      if (callbacks[event]){
-        callbacks[event](publicMethods)
-      }
-
-      if (callbacks.any){
-        callbacks.any(publicMethods)
-      }
+    function transitionInfo(event, from, to, phase, isAny) {
+      return { event: event, from: from, to: to, phase: phase, isAny: isAny }
     }
 
     publicMethods.canTrigger = function(event){
-      return !!endingState(event)
+      return !!transitionsFor[event][publicMethods[STATE]]
     }
 
     publicMethods.trigger = function(event){
-      if (this.canTrigger(event)){
-        changeState(event)
-        return true
-      } else
-        return false
+      var args = slice.call(arguments, 1)
+      var beforeEvent = before[event]
+      var beforeAny = before.any
+      var afterEvent = after[event]
+      var afterAny = after.any
+      var makeTransition = true;
+      var from = publicMethods[STATE]
+      var to = transitionsFor[event][from]
+      if (to) {
+        // avoid making copies of the args array
+        // prepend publicMethods and a placeholder for transitionInfo
+        args.unshift(publicMethods, 1)
+
+        if (beforeEvent) {
+          args[1] = transitionInfo(event, from, to, BEFORE, false)
+          makeTransition = beforeEvent[APPLY](beforeEvent, args) !== false
+        }
+
+        if (makeTransition && beforeAny) {
+          args[1] = transitionInfo(event, from, to, BEFORE, true)
+          makeTransition = beforeAny[APPLY](beforeAny, args) !== false
+        }
+
+        if (makeTransition) {
+          publicMethods[STATE] = to
+
+          if (afterEvent) {
+            args[1] = transitionInfo(event, from, to, AFTER, false)
+            afterEvent[APPLY](afterEvent, args)
+          }
+
+          if (afterAny) {
+            args[1] = transitionInfo(event, from, to, AFTER, true)
+            afterAny[APPLY](afterAny, args)
+          }
+
+          return true
+        }
+      }
+      return false
     }
 
-    publicMethods.on = function(event, callback) {
-      callbacks[event] = callback
+    publicMethods[BEFORE] = function(event, callback) {
+      before[event] = callback
+    }
+
+    publicMethods.on = publicMethods[AFTER] = function(event, callback) {
+      after[event] = callback
     }
 
     return publicMethods
-  })
+  }
 
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+  if (module !== undefined && module.exports !== undefined)
     module.exports = MicroMachine
   else
     window.MicroMachine = MicroMachine
